@@ -12,6 +12,7 @@ from fastapi import Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.security import get_current_user
+# Session imported above — used by the lazy-reload path in require_permission
 
 # Populated at startup: { "Admin": {"Sales:view", ...}, "Sales": {...}, ... }
 ROLE_PERMISSION_CACHE: dict[str, set[str]] = {}
@@ -36,12 +37,17 @@ def require_permission(module: str, action: str):
     FastAPI dependency factory.
     Returns the current user on success; raises 403 on permission denial.
     Admin role always passes — cache is only consulted for non-Admin roles.
+    If a role is missing from the cache (e.g. cache built before seed ran),
+    the cache is rebuilt on-the-fly so the server never needs a restart.
     """
-    def checker(user=Depends(get_current_user)):
+    def checker(user=Depends(get_current_user), db: Session = Depends(get_db)):
         # Both "System Administrator" (new) and "Admin" (legacy seed) get full bypass
         if user.role in ("Admin", "System Administrator"):
             return user
         perm_key = f"{module}:{action}"
+        # Lazy-reload: if role absent, rebuild cache once from DB then re-check
+        if user.role not in ROLE_PERMISSION_CACHE:
+            build_permission_cache(db)
         role_perms = ROLE_PERMISSION_CACHE.get(user.role, set())
         if perm_key not in role_perms:
             raise HTTPException(

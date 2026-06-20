@@ -56,6 +56,8 @@ def update_product(pid: int, body: ProductIn, db: Session = Depends(get_db),
                       action="Updated", field=f, old=old, new=new, user=user)
             setattr(p, f, new)
     p.unit = data["unit"]
+    if data.get("photo") is not None:
+        p.photo = data["photo"]
     db.commit(); db.refresh(p)
     return product_dict(db, p)
 

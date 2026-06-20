@@ -73,6 +73,7 @@ class ProductIn(BaseModel):
     procurement_type: str = ""
     vendor_id: Optional[int] = None
     bom_id: Optional[int] = None
+    photo: Optional[str] = None
 
 
 # ---------- BoM ----------

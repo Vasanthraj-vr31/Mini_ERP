@@ -9,6 +9,7 @@ def product_dict(db: Session, p) -> dict:
         "sales_price": p.sales_price, "cost_price": p.cost_price, "unit": p.unit,
         "procure_on_demand": p.procure_on_demand, "procurement_type": p.procurement_type,
         "vendor_id": p.vendor_id, "bom_id": p.bom_id,
+        "photo": getattr(p, "photo", None),
         **snap,
     }
 

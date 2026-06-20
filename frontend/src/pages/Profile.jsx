@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import api from '../api'
 import { useAuth } from '../auth'
 import { PageHeader, Field } from '../components/ui'
@@ -51,7 +52,8 @@ function Avatar({ user, size = 24, onUpload }) {
 }
 
 export default function Profile() {
-  const { user, setUser, isAdmin } = useAuth()
+  const { user, setUser, isAdmin, logout } = useAuth()
+  const nav = useNavigate()
   const admin = isAdmin()
   const [form, setForm] = useState({
     name: user?.name || '',
@@ -87,15 +89,15 @@ export default function Profile() {
       <div className="card mb-6 overflow-hidden">
         <div className="h-24 bg-burgundy-800" />
         <div className="px-6 pb-6">
-          <div className="flex items-end gap-5 -mt-12 mb-4">
+          <div className="flex flex-col sm:flex-row gap-5 -mt-12 mb-4">
             <Avatar
               user={{ ...user, photo: form.photo }}
               size={24}
               onUpload={photo => setForm(f => ({ ...f, photo }))}
             />
-            <div className="pb-2">
-              <div className="font-display text-2xl text-ink-900">{form.name || user?.name}</div>
-              <div className="flex items-center gap-2 mt-1 flex-wrap">
+            <div className="mt-2 sm:mt-14">
+              <div className="font-display text-2xl text-ink-900 leading-none">{form.name || user?.name}</div>
+              <div className="flex items-center gap-2 mt-2 flex-wrap">
                 <span className={`chip text-xs ${ROLE_BADGE[user?.role] || 'bg-paper-50 text-ink-600'}`}>
                   {user?.role}
                 </span>
@@ -169,6 +171,9 @@ export default function Profile() {
         <div className="flex items-center gap-3 mt-6">
           <button className="btn-primary" onClick={save} disabled={busy}>
             {busy ? 'Saving…' : 'Save Changes'}
+          </button>
+          <button className="btn-secondary text-rose-600 hover:bg-rose-50 border-rose-200" onClick={() => { logout(); nav('/login') }}>
+            Logout
           </button>
           {saved && <span className="text-success text-sm font-medium">✓ Saved successfully</span>}
         </div>

@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import api from '../api'
-import { PageHeader, Spinner, Field } from '../components/ui'
+import { PageHeader, Spinner, Field, Modal } from '../components/ui'
 import DataTable from '../components/DataTable'
-import { Modal } from './Products'
 
 export default function Boms() {
   const [rows, setRows] = useState(null)
@@ -19,8 +19,8 @@ export default function Boms() {
         columns={[
           { key: 'reference', label: 'Reference', mono: true },
           { key: 'finished_product', label: 'Finished Product' },
-          { key: 'components', label: 'Components', right: true, render: (r) => r.components.length },
-          { key: 'operations', label: 'Operations', right: true, render: (r) => r.operations.length },
+          { key: 'quantity', label: 'Quantity', right: true, mono: true },
+          { key: 'unit', label: 'Unit', render: () => 'Units' },
         ]} rows={rows} />
       {creating && <CreateBom onClose={() => setCreating(false)} onDone={() => { setCreating(false); load() }} />}
       {open && <ViewBom bom={open} onClose={() => setOpen(null)} />}
@@ -29,18 +29,57 @@ export default function Boms() {
 }
 
 function ViewBom({ bom, onClose }) {
+  const navigate = useNavigate()
   return (
     <Modal title={`${bom.reference} · ${bom.finished_product}`} onClose={onClose}>
+      <div className="flex justify-end mb-4">
+        <button className="btn-ghost text-xs border border-line" onClick={() => { onClose(); navigate('/audit?module=BoM') }}>
+          Logs ↗
+        </button>
+      </div>
+
+      <div className="grid sm:grid-cols-2 gap-3 text-sm mb-5 p-4 bg-paper-50 rounded-xl">
+        <div><div className="text-ink-400 text-xs mb-0.5">Finished Product</div>{bom.finished_product}</div>
+        <div><div className="text-ink-400 text-xs mb-0.5">Yield Quantity</div><span className="mono">{bom.quantity}</span> Units</div>
+      </div>
+
       <div className="eyebrow mb-2">Components</div>
-      <table className="w-full text-sm mb-5"><tbody>
-        {bom.components.map((c) => <tr key={c.id} className="border-b border-line/50">
-          <td className="py-1.5">{c.component}</td><td className="text-right mono">{c.quantity}</td></tr>)}
-      </tbody></table>
+      <table className="w-full text-sm mb-5">
+        <thead><tr className="text-ink-500 text-xs border-b border-line">
+          <th className="text-left py-2">Component</th>
+          <th className="text-right">Quantity</th>
+          <th className="text-right">Unit</th>
+        </tr></thead>
+        <tbody>
+          {bom.components.map((c) => (
+            <tr key={c.id} className="border-b border-line/50">
+              <td className="py-1.5">{c.component}</td>
+              <td className="text-right mono">{c.quantity}</td>
+              <td className="text-right text-ink-400 text-xs">Units</td>
+            </tr>
+          ))}
+          {bom.components.length === 0 && <tr><td colSpan={3} className="py-4 text-center text-ink-300 text-sm">No components</td></tr>}
+        </tbody>
+      </table>
+
       <div className="eyebrow mb-2">Operations</div>
-      <table className="w-full text-sm"><tbody>
-        {bom.operations.map((o) => <tr key={o.id} className="border-b border-line/50">
-          <td className="py-1.5">{o.name}</td><td>{o.work_center || '—'}</td><td className="text-right mono">{o.duration_minutes} min</td></tr>)}
-      </tbody></table>
+      <table className="w-full text-sm">
+        <thead><tr className="text-ink-500 text-xs border-b border-line">
+          <th className="text-left py-2">Operation</th>
+          <th>Work Center</th>
+          <th className="text-right">Duration (min)</th>
+        </tr></thead>
+        <tbody>
+          {bom.operations.map((o) => (
+            <tr key={o.id} className="border-b border-line/50">
+              <td className="py-1.5">{o.name}</td>
+              <td>{o.work_center || '—'}</td>
+              <td className="text-right mono">{o.duration_minutes}</td>
+            </tr>
+          ))}
+          {bom.operations.length === 0 && <tr><td colSpan={3} className="py-4 text-center text-ink-300 text-sm">No operations</td></tr>}
+        </tbody>
+      </table>
     </Modal>
   )
 }

@@ -15,6 +15,11 @@ import Reports from './pages/Reports'
 import Profile from './pages/Profile'
 import Users from './pages/Users'
 import Analytics from './pages/Analytics'
+import Customers from './pages/Customers'
+import Warehouse from './pages/Warehouse'
+import Quality from './pages/Quality'
+import Invoices from './pages/Invoices'
+import CommandPalette from './components/CommandPalette'
 
 function Guard({ children }) {
   const { user } = useAuth()
@@ -25,6 +30,7 @@ function Guard({ children }) {
 export default function App() {
   const { user } = useAuth()
   return (
+    <>
     <Routes>
       <Route path="/login" element={user ? <Navigate to="/" replace /> : <Login />} />
       <Route path="/signup" element={user ? <Navigate to="/" replace /> : <Signup />} />
@@ -40,7 +46,13 @@ export default function App() {
       <Route path="/profile" element={<Guard><Profile /></Guard>} />
       <Route path="/users" element={<Guard><Users /></Guard>} />
       <Route path="/analytics" element={<Guard><Analytics /></Guard>} />
+      <Route path="/customers" element={<Guard><Customers /></Guard>} />
+      <Route path="/warehouse" element={<Guard><Warehouse /></Guard>} />
+      <Route path="/quality" element={<Guard><Quality /></Guard>} />
+      <Route path="/invoices" element={<Guard><Invoices /></Guard>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    <CommandPalette />
+    </>
   )
 }

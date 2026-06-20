@@ -19,3 +19,4 @@ class Product(Base):
     procurement_type: Mapped[str] = mapped_column(String(20), default="")  # Purchase | Manufacturing
     vendor_id: Mapped[int | None] = mapped_column(ForeignKey("vendors.id"), nullable=True)
     bom_id: Mapped[int | None] = mapped_column(ForeignKey("bills_of_material.id"), nullable=True)
+    photo: Mapped[str | None] = mapped_column(String(500), nullable=True, default=None)
