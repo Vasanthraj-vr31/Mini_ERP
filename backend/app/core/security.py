@@ -42,12 +42,14 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     user = db.get(User, int(user_id))
     if not user:
         raise cred_exc
+    if getattr(user, "status", "Active") != "Active":
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "Account is inactive")
     return user
 
 
 def require_roles(*roles: str):
     def checker(user=Depends(get_current_user)):
-        if roles and user.role not in roles and user.role != "Admin":
+        if roles and user.role not in roles and user.role not in ("Admin", "System Administrator"):
             raise HTTPException(status.HTTP_403_FORBIDDEN, "Insufficient permissions")
         return user
     return checker

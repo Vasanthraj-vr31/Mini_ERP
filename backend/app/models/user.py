@@ -1,4 +1,6 @@
-from sqlalchemy import String, Text
+from datetime import datetime
+from typing import Optional
+from sqlalchemy import String, Text, DateTime
 from sqlalchemy.orm import Mapped, mapped_column
 from app.core.database import Base
 
@@ -16,3 +18,6 @@ class User(Base):
     address: Mapped[str] = mapped_column(Text, default="")
     mobile: Mapped[str] = mapped_column(String(40), default="")
     photo: Mapped[str] = mapped_column(Text, default="")  # data URL / path
+    status: Mapped[str] = mapped_column(String(20), default="Active")  # Active | Inactive
+    last_login: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    department: Mapped[str] = mapped_column(String(100), default="")

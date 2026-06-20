@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from app.core.database import get_db
+from app.core.security import get_current_user
 from app.models.sales import SalesOrder
 from app.models.purchase import PurchaseOrder
 from app.models.manufacturing import ManufacturingOrder
@@ -18,7 +19,7 @@ def _counts(db, model, statuses):
 
 
 @router.get("")
-def dashboard(db: Session = Depends(get_db)):
+def dashboard(db: Session = Depends(get_db), _=Depends(get_current_user)):
     so = _counts(db, SalesOrder, list(SOStatus))
     po = _counts(db, PurchaseOrder, list(POStatus))
     mo = _counts(db, ManufacturingOrder, list(MOStatus))

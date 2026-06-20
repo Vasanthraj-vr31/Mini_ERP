@@ -1,5 +1,6 @@
 import { createContext, useContext, useState } from 'react'
 import api from './api'
+import { can, isAdmin } from './permissions'
 
 const AuthCtx = createContext(null)
 
@@ -24,7 +25,20 @@ export function AuthProvider({ children }) {
     setUser(null)
   }
 
-  return <AuthCtx.Provider value={{ user, login, logout, setUser }}>{children}</AuthCtx.Provider>
+  const updateUser = (data) => {
+    localStorage.setItem('user', JSON.stringify(data))
+    setUser(data)
+  }
+
+  // can(module, action) — checks current user's role permissions
+  const userCan = (module, action) => can(user?.role, module, action)
+  const userIsAdmin = () => isAdmin(user?.role)
+
+  return (
+    <AuthCtx.Provider value={{ user, login, logout, setUser: updateUser, can: userCan, isAdmin: userIsAdmin }}>
+      {children}
+    </AuthCtx.Provider>
+  )
 }
 
 export const useAuth = () => useContext(AuthCtx)

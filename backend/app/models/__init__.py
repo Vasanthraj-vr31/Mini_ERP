@@ -8,6 +8,7 @@ from .manufacturing import ManufacturingOrder, MoComponent, MoWorkOrder
 from .stock import StockLedger
 from .audit import AuditLog
 from .intelligence import AiInsight, VendorScore
+from .rbac import Role, Permission, RolePermission
 
 __all__ = [
     "User", "Customer", "Vendor", "Product",
@@ -15,4 +16,5 @@ __all__ = [
     "WorkCenter", "BillOfMaterial", "BomComponent", "BomOperation",
     "ManufacturingOrder", "MoComponent", "MoWorkOrder",
     "StockLedger", "AuditLog", "AiInsight", "VendorScore",
+    "Role", "Permission", "RolePermission",
 ]

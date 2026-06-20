@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import api from '../api'
 import { useAuth } from '../auth'
 
 function PasswordInput({ value, onChange, placeholder = 'Password' }) {
@@ -35,73 +36,93 @@ function PasswordInput({ value, onChange, placeholder = 'Password' }) {
   )
 }
 
-export default function Login() {
-  const { login } = useAuth()
+export default function Signup() {
+  const { setUser } = useAuth()
   const nav = useNavigate()
-  const [u, setU] = useState('adminuser')
-  const [p, setP] = useState('Admin@123')
+  const [form, setForm] = useState({ name: '', email: '', password: '', confirm: '' })
   const [err, setErr] = useState('')
   const [busy, setBusy] = useState(false)
 
+  const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
+
   const submit = async (e) => {
     e.preventDefault()
-    setErr(''); setBusy(true)
-    try { await login(u, p); nav('/') }
-    catch (e) { setErr(e?.response?.data?.detail || 'Invalid Login Id or Password') }
-    finally { setBusy(false) }
+    setErr('')
+    if (!form.name.trim()) return setErr('Full name is required')
+    if (!form.email.trim()) return setErr('Email is required')
+    if (form.password.length < 8) return setErr('Password must be at least 8 characters')
+    if (form.password !== form.confirm) return setErr('Passwords do not match')
+
+    setBusy(true)
+    try {
+      const { data } = await api.post('/auth/signup', {
+        name: form.name.trim(),
+        email: form.email.trim(),
+        password: form.password,
+      })
+      localStorage.setItem('token', data.access_token)
+      localStorage.setItem('user', JSON.stringify(data.user))
+      setUser(data.user)
+      nav('/login')
+    } catch (e) {
+      setErr(e?.response?.data?.detail || 'Signup failed. Please try again.')
+    } finally {
+      setBusy(false)
+    }
   }
 
   return (
     <div className="min-h-screen grid md:grid-cols-2">
-      {/* Velvet brand panel */}
+      {/* Brand panel */}
       <div className="bg-burgundy-800 text-white p-12 hidden md:flex flex-col justify-between">
         <div className="font-display text-4xl leading-none">
           shiv
           <div className="text-rose-300 text-sm tracking-[0.25em] uppercase mt-2">furniture works</div>
         </div>
         <div>
-          <div className="eyebrow text-rose-300 mb-3">Enterprise Resource Planning</div>
-          <h1 className="font-display text-5xl leading-tight">From Demand<br />to Delivery.</h1>
+          <div className="eyebrow text-rose-300 mb-3">Get Started</div>
+          <h1 className="font-display text-5xl leading-tight">Join Shiv<br />ERP Today.</h1>
           <p className="text-rose-200/80 mt-4 max-w-sm">
-            Sales, procurement, manufacturing and inventory — orchestrated as one connected, intelligent system.
+            Your account will be activated by a system administrator. Log in after approval to access your workspace.
           </p>
         </div>
-        <div className="text-rose-300/50 text-xs">Make To Stock · Make To Order · AI Insights</div>
+        <div className="text-rose-300/50 text-xs">Secure · Role-Based · Enterprise-Ready</div>
       </div>
 
       {/* Form */}
       <div className="flex items-center justify-center p-8 bg-paper-50">
         <form onSubmit={submit} className="w-full max-w-sm">
-          <h2 className="font-display text-3xl mb-1">Welcome back</h2>
-          <p className="text-ink-400 text-sm mb-8">Sign in to your workspace</p>
+          <h2 className="font-display text-3xl mb-1">Create account</h2>
+          <p className="text-ink-400 text-sm mb-8">Enter your details to get started</p>
 
-          {err && <div className="mb-4 chip bg-danger-bg text-danger w-full justify-center">{err}</div>}
+          {err && <div className="mb-4 p-3 rounded-xl bg-danger-bg text-danger text-sm">{err}</div>}
 
-          <label className="label">Login Id or Email</label>
-          <input className="input mb-4 w-full" value={u} onChange={(e) => setU(e.target.value)} />
+          <label className="label">Full Name</label>
+          <input className="input mb-4 w-full" value={form.name} onChange={set('name')} placeholder="Your full name" />
+
+          <label className="label">Email Address</label>
+          <input className="input mb-4 w-full" type="email" value={form.email} onChange={set('email')} placeholder="you@example.com" />
 
           <label className="label">Password</label>
+          <div className="mb-4">
+            <PasswordInput value={form.password} onChange={set('password')} placeholder="Minimum 8 characters" />
+          </div>
+
+          <label className="label">Confirm Password</label>
           <div className="mb-6">
-            <PasswordInput value={p} onChange={(e) => setP(e.target.value)} />
+            <PasswordInput value={form.confirm} onChange={set('confirm')} placeholder="Re-enter your password" />
           </div>
 
           <button className="btn-primary w-full justify-center" disabled={busy}>
-            {busy ? 'Signing in…' : 'Sign In'}
+            {busy ? 'Creating account…' : 'Create Account'}
           </button>
 
           <p className="text-center text-sm text-ink-400 mt-5">
-            New to Shiv ERP?{' '}
-            <Link to="/signup" className="text-burgundy-800 font-medium hover:underline">
-              Create an account
+            Already have an account?{' '}
+            <Link to="/login" className="text-burgundy-800 font-medium hover:underline">
+              Sign in
             </Link>
           </p>
-
-          <div className="text-xs text-ink-400 mt-6 space-y-1 border-t border-line pt-4">
-            <div className="font-medium text-ink-600">Demo accounts</div>
-            <div>adminuser / Admin@123 · salesuser / Sales@123</div>
-            <div>purchaseuser / Buyer@123 · mfguser01 / Mfg@1234</div>
-            <div>invmgr01 / Inv@12345 · owner01 / Owner@123</div>
-          </div>
         </form>
       </div>
     </div>

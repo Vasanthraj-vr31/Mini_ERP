@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.core.database import get_db
-from app.core.security import get_current_user
+from app.core.permissions import require_permission
 from app.models.manufacturing import ManufacturingOrder, MoComponent, MoWorkOrder
 from app.models.product import Product
 from app.schemas import ManufacturingOrderIn
@@ -13,19 +13,20 @@ router = APIRouter(prefix="/api/manufacturing-orders", tags=["manufacturing"])
 
 
 @router.get("")
-def list_mos(db: Session = Depends(get_db)):
+def list_mos(db: Session = Depends(get_db), _=Depends(require_permission("Manufacturing", "view"))):
     return [mo_dict(db, m) for m in db.query(ManufacturingOrder).order_by(ManufacturingOrder.id.desc()).all()]
 
 
 @router.get("/{mid}")
-def get_mo(mid: int, db: Session = Depends(get_db)):
+def get_mo(mid: int, db: Session = Depends(get_db), _=Depends(require_permission("Manufacturing", "view"))):
     m = db.get(ManufacturingOrder, mid)
     if not m: raise HTTPException(404, "Manufacturing Order not found")
     return mo_dict(db, m)
 
 
 @router.post("")
-def create_mo(body: ManufacturingOrderIn, db: Session = Depends(get_db), user=Depends(get_current_user)):
+def create_mo(body: ManufacturingOrderIn, db: Session = Depends(get_db),
+              user=Depends(require_permission("Manufacturing", "create"))):
     product = db.get(Product, body.finished_product_id)
     if not product: raise HTTPException(400, "Finished product not found")
     mo = mo_svc.build_mo_from_bom(db, finished_product=product, bom_id=body.bom_id,
@@ -51,7 +52,8 @@ def create_mo(body: ManufacturingOrderIn, db: Session = Depends(get_db), user=De
 
 
 @router.put("/{mid}")
-def update_mo(mid: int, body: ManufacturingOrderIn, db: Session = Depends(get_db), user=Depends(get_current_user)):
+def update_mo(mid: int, body: ManufacturingOrderIn, db: Session = Depends(get_db),
+              user=Depends(require_permission("Manufacturing", "edit"))):
     mo = db.get(ManufacturingOrder, mid)
     if not mo: raise HTTPException(404, "Manufacturing Order not found")
     if mo.status in ("Done", "Cancelled"):
@@ -75,7 +77,8 @@ def update_mo(mid: int, body: ManufacturingOrderIn, db: Session = Depends(get_db
 
 
 @router.post("/{mid}/confirm")
-def confirm_mo(mid: int, db: Session = Depends(get_db), user=Depends(get_current_user)):
+def confirm_mo(mid: int, db: Session = Depends(get_db),
+               user=Depends(require_permission("Manufacturing", "approve"))):
     mo = db.get(ManufacturingOrder, mid)
     if not mo: raise HTTPException(404, "MO not found")
     mo_svc.confirm(db, mo, user=user); db.commit(); db.refresh(mo)
@@ -83,7 +86,8 @@ def confirm_mo(mid: int, db: Session = Depends(get_db), user=Depends(get_current
 
 
 @router.post("/{mid}/start")
-def start_mo(mid: int, db: Session = Depends(get_db), user=Depends(get_current_user)):
+def start_mo(mid: int, db: Session = Depends(get_db),
+             user=Depends(require_permission("Manufacturing", "approve"))):
     mo = db.get(ManufacturingOrder, mid)
     if not mo: raise HTTPException(404, "MO not found")
     mo_svc.start(db, mo, user=user); db.commit(); db.refresh(mo)
@@ -91,7 +95,8 @@ def start_mo(mid: int, db: Session = Depends(get_db), user=Depends(get_current_u
 
 
 @router.post("/{mid}/produce")
-def produce_mo(mid: int, db: Session = Depends(get_db), user=Depends(get_current_user)):
+def produce_mo(mid: int, db: Session = Depends(get_db),
+               user=Depends(require_permission("Manufacturing", "approve"))):
     mo = db.get(ManufacturingOrder, mid)
     if not mo: raise HTTPException(404, "MO not found")
     mo_svc.produce(db, mo, user=user); db.commit(); db.refresh(mo)
@@ -99,7 +104,8 @@ def produce_mo(mid: int, db: Session = Depends(get_db), user=Depends(get_current
 
 
 @router.post("/{mid}/cancel")
-def cancel_mo(mid: int, db: Session = Depends(get_db), user=Depends(get_current_user)):
+def cancel_mo(mid: int, db: Session = Depends(get_db),
+              user=Depends(require_permission("Manufacturing", "approve"))):
     mo = db.get(ManufacturingOrder, mid)
     if not mo: raise HTTPException(404, "MO not found")
     mo_svc.cancel(db, mo, user=user); db.commit(); db.refresh(mo)

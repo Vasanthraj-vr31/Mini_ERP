@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './auth'
 import Layout from './components/Layout'
 import Login from './pages/Login'
+import Signup from './pages/Signup'
 import Dashboard from './pages/Dashboard'
 import Products from './pages/Products'
 import Sales from './pages/Sales'
@@ -12,6 +13,8 @@ import Audit from './pages/Audit'
 import AI from './pages/AI'
 import Reports from './pages/Reports'
 import Profile from './pages/Profile'
+import Users from './pages/Users'
+import Analytics from './pages/Analytics'
 
 function Guard({ children }) {
   const { user } = useAuth()
@@ -24,6 +27,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/login" element={user ? <Navigate to="/" replace /> : <Login />} />
+      <Route path="/signup" element={user ? <Navigate to="/" replace /> : <Signup />} />
       <Route path="/" element={<Guard><Dashboard /></Guard>} />
       <Route path="/sales" element={<Guard><Sales /></Guard>} />
       <Route path="/purchase" element={<Guard><Purchase /></Guard>} />
@@ -34,6 +38,8 @@ export default function App() {
       <Route path="/reports" element={<Guard><Reports /></Guard>} />
       <Route path="/audit" element={<Guard><Audit /></Guard>} />
       <Route path="/profile" element={<Guard><Profile /></Guard>} />
+      <Route path="/users" element={<Guard><Users /></Guard>} />
+      <Route path="/analytics" element={<Guard><Analytics /></Guard>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )

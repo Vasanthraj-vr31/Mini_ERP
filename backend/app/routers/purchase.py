@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.core.database import get_db
-from app.core.security import get_current_user
+from app.core.permissions import require_permission
 from app.models.purchase import PurchaseOrder, PurchaseOrderLine
 from app.models.product import Product
 from app.models.enums import POStatus
@@ -14,19 +14,20 @@ router = APIRouter(prefix="/api/purchase-orders", tags=["purchase"])
 
 
 @router.get("")
-def list_pos(db: Session = Depends(get_db)):
+def list_pos(db: Session = Depends(get_db), _=Depends(require_permission("Purchase", "view"))):
     return [po_dict(db, p) for p in db.query(PurchaseOrder).order_by(PurchaseOrder.id.desc()).all()]
 
 
 @router.get("/{pid}")
-def get_po(pid: int, db: Session = Depends(get_db)):
+def get_po(pid: int, db: Session = Depends(get_db), _=Depends(require_permission("Purchase", "view"))):
     p = db.get(PurchaseOrder, pid)
     if not p: raise HTTPException(404, "Purchase Order not found")
     return po_dict(db, p)
 
 
 @router.post("")
-def create_po(body: PurchaseOrderIn, db: Session = Depends(get_db), user=Depends(get_current_user)):
+def create_po(body: PurchaseOrderIn, db: Session = Depends(get_db),
+              user=Depends(require_permission("Purchase", "create"))):
     po = PurchaseOrder(reference=sequence.next_ref(db, PurchaseOrder, "PO"),
                        vendor_id=body.vendor_id, vendor_address=body.vendor_address,
                        responsible_id=body.responsible_id, status=POStatus.draft.value)
@@ -43,7 +44,8 @@ def create_po(body: PurchaseOrderIn, db: Session = Depends(get_db), user=Depends
 
 
 @router.put("/{pid}")
-def update_po(pid: int, body: PurchaseOrderIn, db: Session = Depends(get_db), user=Depends(get_current_user)):
+def update_po(pid: int, body: PurchaseOrderIn, db: Session = Depends(get_db),
+              user=Depends(require_permission("Purchase", "edit"))):
     po = db.get(PurchaseOrder, pid)
     if not po: raise HTTPException(404, "Purchase Order not found")
     if po.status != POStatus.draft.value:
@@ -62,7 +64,8 @@ def update_po(pid: int, body: PurchaseOrderIn, db: Session = Depends(get_db), us
 
 
 @router.post("/{pid}/confirm")
-def confirm_po(pid: int, db: Session = Depends(get_db), user=Depends(get_current_user)):
+def confirm_po(pid: int, db: Session = Depends(get_db),
+               user=Depends(require_permission("Purchase", "approve"))):
     po = db.get(PurchaseOrder, pid)
     if not po: raise HTTPException(404, "Purchase Order not found")
     po_svc.confirm(db, po, user=user); db.commit(); db.refresh(po)
@@ -70,7 +73,8 @@ def confirm_po(pid: int, db: Session = Depends(get_db), user=Depends(get_current
 
 
 @router.post("/{pid}/receive")
-def receive_po(pid: int, body: ReceiveIn, db: Session = Depends(get_db), user=Depends(get_current_user)):
+def receive_po(pid: int, body: ReceiveIn, db: Session = Depends(get_db),
+               user=Depends(require_permission("Purchase", "approve"))):
     po = db.get(PurchaseOrder, pid)
     if not po: raise HTTPException(404, "Purchase Order not found")
     po_svc.receive(db, po, receipts=body.receipts or None, user=user); db.commit(); db.refresh(po)
@@ -78,7 +82,8 @@ def receive_po(pid: int, body: ReceiveIn, db: Session = Depends(get_db), user=De
 
 
 @router.post("/{pid}/cancel")
-def cancel_po(pid: int, db: Session = Depends(get_db), user=Depends(get_current_user)):
+def cancel_po(pid: int, db: Session = Depends(get_db),
+              user=Depends(require_permission("Purchase", "approve"))):
     po = db.get(PurchaseOrder, pid)
     if not po: raise HTTPException(404, "Purchase Order not found")
     po_svc.cancel(db, po, user=user); db.commit(); db.refresh(po)

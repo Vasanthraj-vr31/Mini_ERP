@@ -5,11 +5,35 @@ from typing import Optional
 # ---------- Auth ----------
 class SignupIn(BaseModel):
     name: str
+    login_id: Optional[str] = None   # auto-generated from name if omitted
+    email: EmailStr
+    password: str
+    role: str = "Normal User"
+    position: str = ""
+    department: str = ""
+
+
+class UserCreate(BaseModel):
+    name: str
     login_id: str
     email: EmailStr
     password: str
-    role: str = "Sales"
+    role: str = "Normal User"
     position: str = ""
+    department: str = ""
+    mobile: str = ""
+    address: str = ""
+
+
+class UserUpdate(BaseModel):
+    name: Optional[str] = None
+    email: Optional[str] = None
+    mobile: Optional[str] = None
+    address: Optional[str] = None
+    position: Optional[str] = None
+    department: Optional[str] = None
+    role: Optional[str] = None
+    photo: Optional[str] = None
 
 
 class TokenOut(BaseModel):

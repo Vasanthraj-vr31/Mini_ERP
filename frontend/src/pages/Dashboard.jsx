@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../api'
+import { useAuth } from '../auth'
 import { PageHeader, Chip, Spinner } from '../components/ui'
 
 const SEV_TONE = { critical: 'danger', warning: 'warning', info: 'info' }
@@ -38,12 +39,17 @@ export default function Dashboard() {
   const [data, setData] = useState(null)
   const [ai, setAi] = useState(null)
   const [health, setHealth] = useState(null)
+  const [analytics, setAnalytics] = useState(null)
   const nav = useNavigate()
+  const { can } = useAuth()
 
   useEffect(() => {
     api.get('/dashboard').then((r) => setData(r.data))
     api.get('/ai/insights').then((r) => setAi(r.data))
     api.get('/ai/health').then((r) => setHealth(r.data))
+    if (can('Analytics', 'view')) {
+      api.get('/analytics').then((r) => setAnalytics(r.data)).catch(() => {})
+    }
   }, [])
 
   if (!data) return <Spinner />
@@ -128,6 +134,28 @@ export default function Dashboard() {
         buckets={[['Draft', data.manufacturing.Draft], ['Confirmed', data.manufacturing.Confirmed],
                   ['In-Progress', data.manufacturing['In-Progress']], ['Done', data.manufacturing.Done],
                   ['Cancelled', data.manufacturing.Cancelled]]} />
+
+      {/* Analytics quick-view (shown only if permitted) */}
+      {analytics && (
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-3">
+            <div className="eyebrow">Business Snapshot</div>
+            <button className="text-xs text-burgundy-800 hover:underline" onClick={() => nav('/analytics')}>
+              Full Analytics →
+            </button>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {[
+              ['Total Revenue', `₹${Number(analytics.sales.total_revenue).toLocaleString('en-IN')}`, 'success'],
+              ['Gross Margin', `₹${Number(analytics.gross_margin).toLocaleString('en-IN')}`, analytics.gross_margin >= 0 ? 'success' : 'danger'],
+              ['Inventory Value', `₹${Number(analytics.inventory.total_value).toLocaleString('en-IN')}`, 'info'],
+              ['Low Stock Items', analytics.inventory.low_stock_count, analytics.inventory.low_stock_count > 0 ? 'warning' : 'success'],
+            ].map(([label, value, tone]) => (
+              <Bucket key={label} label={label} value={value} tone={tone} />
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

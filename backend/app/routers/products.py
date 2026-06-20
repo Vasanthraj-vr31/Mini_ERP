@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.core.database import get_db
-from app.core.security import get_current_user
+from app.core.permissions import require_permission
 from app.models.product import Product
 from app.schemas import ProductIn
 from app.serializers import product_dict
@@ -11,19 +11,20 @@ router = APIRouter(prefix="/api/products", tags=["products"])
 
 
 @router.get("")
-def list_products(db: Session = Depends(get_db)):
+def list_products(db: Session = Depends(get_db), _=Depends(require_permission("Product", "view"))):
     return [product_dict(db, p) for p in db.query(Product).order_by(Product.id).all()]
 
 
 @router.get("/{pid}")
-def get_product(pid: int, db: Session = Depends(get_db)):
+def get_product(pid: int, db: Session = Depends(get_db), _=Depends(require_permission("Product", "view"))):
     p = db.get(Product, pid)
     if not p: raise HTTPException(404, "Product not found")
     return product_dict(db, p)
 
 
 @router.post("")
-def create_product(body: ProductIn, db: Session = Depends(get_db), user=Depends(get_current_user)):
+def create_product(body: ProductIn, db: Session = Depends(get_db),
+                   user=Depends(require_permission("Product", "create"))):
     if body.procure_on_demand:
         if body.procurement_type not in ("Purchase", "Manufacturing"):
             raise HTTPException(400, "Procurement Type required when Procure on Demand is on")
@@ -40,7 +41,8 @@ def create_product(body: ProductIn, db: Session = Depends(get_db), user=Depends(
 
 
 @router.put("/{pid}")
-def update_product(pid: int, body: ProductIn, db: Session = Depends(get_db), user=Depends(get_current_user)):
+def update_product(pid: int, body: ProductIn, db: Session = Depends(get_db),
+                   user=Depends(require_permission("Product", "edit"))):
     p = db.get(Product, pid)
     if not p: raise HTTPException(404, "Product not found")
     tracked = ["name", "sales_price", "cost_price", "on_hand_qty", "procure_on_demand",
@@ -59,7 +61,8 @@ def update_product(pid: int, body: ProductIn, db: Session = Depends(get_db), use
 
 
 @router.get("/{pid}/ledger")
-def product_ledger(pid: int, db: Session = Depends(get_db)):
+def product_ledger(pid: int, db: Session = Depends(get_db),
+                   _=Depends(require_permission("Product", "view"))):
     from app.models.stock import StockLedger
     rows = (db.query(StockLedger).filter(StockLedger.product_id == pid)
             .order_by(StockLedger.id.desc()).all())

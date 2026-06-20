@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from app.core.database import get_db
+from app.core.security import require_roles
 from app.models.audit import AuditLog
 
 router = APIRouter(prefix="/api/audit-logs", tags=["audit"])
@@ -9,6 +10,7 @@ router = APIRouter(prefix="/api/audit-logs", tags=["audit"])
 
 @router.get("")
 def list_logs(db: Session = Depends(get_db), module: str | None = None,
+              _=Depends(require_roles("Admin", "System Administrator", "Sales Administrator", "Business Owner")),
               action: str | None = None, user: str | None = None, limit: int = 200):
     q = db.query(AuditLog)
     if module and module != "All Modules": q = q.filter(AuditLog.module == module)
