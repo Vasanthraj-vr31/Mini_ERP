@@ -1,13 +1,39 @@
-# Python
+# =====================
+# Python (Backend)
+# =====================
 backend/.venv/
-__pycache__/
+backend/__pycache__/
+**/__pycache__/
 *.pyc
+*.pyo
+*.pyd
+
 backend/shiv_erp.db
 backend/.env
 
-# Node
+# =====================
+# Node (Frontend)
+# =====================
 frontend/node_modules/
 frontend/dist/
+frontend/.vite/
 
-# misc
+node_modules/
+dist/
+
+# =====================
+# Environment files
+# =====================
+.env
+*.env
+
+# =====================
+# OS files
+# =====================
 .DS_Store
+Thumbs.db
+
+# =====================
+# Logs
+# =====================
+*.log
