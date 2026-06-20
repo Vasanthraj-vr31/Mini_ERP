@@ -1,0 +1,13 @@
+# Python
+backend/.venv/
+__pycache__/
+*.pyc
+backend/shiv_erp.db
+backend/.env
+
+# Node
+frontend/node_modules/
+frontend/dist/
+
+# misc
+.DS_Store

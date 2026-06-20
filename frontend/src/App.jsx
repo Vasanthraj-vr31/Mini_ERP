@@ -1,0 +1,40 @@
+import { Routes, Route, Navigate } from 'react-router-dom'
+import { useAuth } from './auth'
+import Layout from './components/Layout'
+import Login from './pages/Login'
+import Dashboard from './pages/Dashboard'
+import Products from './pages/Products'
+import Sales from './pages/Sales'
+import Purchase from './pages/Purchase'
+import Manufacturing from './pages/Manufacturing'
+import Boms from './pages/Boms'
+import Audit from './pages/Audit'
+import AI from './pages/AI'
+import Reports from './pages/Reports'
+import Profile from './pages/Profile'
+
+function Guard({ children }) {
+  const { user } = useAuth()
+  if (!user) return <Navigate to="/login" replace />
+  return <Layout>{children}</Layout>
+}
+
+export default function App() {
+  const { user } = useAuth()
+  return (
+    <Routes>
+      <Route path="/login" element={user ? <Navigate to="/" replace /> : <Login />} />
+      <Route path="/" element={<Guard><Dashboard /></Guard>} />
+      <Route path="/sales" element={<Guard><Sales /></Guard>} />
+      <Route path="/purchase" element={<Guard><Purchase /></Guard>} />
+      <Route path="/manufacturing" element={<Guard><Manufacturing /></Guard>} />
+      <Route path="/boms" element={<Guard><Boms /></Guard>} />
+      <Route path="/products" element={<Guard><Products /></Guard>} />
+      <Route path="/ai" element={<Guard><AI /></Guard>} />
+      <Route path="/reports" element={<Guard><Reports /></Guard>} />
+      <Route path="/audit" element={<Guard><Audit /></Guard>} />
+      <Route path="/profile" element={<Guard><Profile /></Guard>} />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  )
+}

@@ -1,0 +1,13 @@
+# Pure-Python / wheel-only friendly set (Python 3.14, no C/Rust build toolchain required)
+fastapi
+uvicorn
+sqlalchemy
+pydantic
+pydantic-settings
+PyJWT
+passlib
+python-multipart
+email-validator
+fpdf2
+# Postgres driver is optional — install separately when a Postgres server is available:
+#   pip install "psycopg[binary]"
