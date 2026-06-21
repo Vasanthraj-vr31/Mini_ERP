@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../auth'
 
 const COMMANDS = [
   // Navigation
@@ -9,9 +10,9 @@ const COMMANDS = [
   { id: 'nav-purchase',      group: 'Navigate',  label: 'Go to Purchase Orders',     icon: '🚚', path: '/purchase' },
   { id: 'nav-mfg',           group: 'Navigate',  label: 'Go to Manufacturing',       icon: '⚙️',  path: '/manufacturing' },
   { id: 'nav-boms',          group: 'Navigate',  label: 'Go to Bills of Materials',  icon: '📋', path: '/boms' },
-  { id: 'nav-customers',     group: 'Navigate',  label: 'Go to Customers',           icon: '👥', path: '/customers' },
-  { id: 'nav-warehouse',     group: 'Navigate',  label: 'Go to Warehouse',           icon: '🏭', path: '/warehouse' },
-  { id: 'nav-quality',       group: 'Navigate',  label: 'Go to Quality Control',     icon: '✅', path: '/quality' },
+  { id: 'nav-customers',     group: 'Navigate',  label: 'Go to Customers',           icon: '👥', path: '/customers', hideForCustomer: true },
+  { id: 'nav-warehouse',     group: 'Navigate',  label: 'Go to Warehouse',           icon: '🏭', path: '/warehouse', hideForCustomer: true },
+  { id: 'nav-quality',       group: 'Navigate',  label: 'Go to Quality Control',     icon: '✅', path: '/quality', hideForCustomer: true },
   { id: 'nav-invoices',      group: 'Navigate',  label: 'Go to Invoices',            icon: '🧾', path: '/invoices' },
   { id: 'nav-ai',            group: 'Navigate',  label: 'Open AI Insights',          icon: '🤖', path: '/ai' },
   { id: 'nav-analytics',     group: 'Navigate',  label: 'View Analytics',            icon: '📊', path: '/analytics' },
@@ -24,7 +25,7 @@ const COMMANDS = [
   { id: 'act-new-po',        group: 'Actions',   label: 'Create New Purchase Order', icon: '➕', path: '/purchase', action: 'new' },
   { id: 'act-new-mo',        group: 'Actions',   label: 'Create Manufacturing Order',icon: '➕', path: '/manufacturing', action: 'new' },
   { id: 'act-new-product',   group: 'Actions',   label: 'Add New Product',           icon: '➕', path: '/products', action: 'new' },
-  { id: 'act-new-customer',  group: 'Actions',   label: 'Add New Customer',          icon: '➕', path: '/customers', action: 'new' },
+  { id: 'act-new-customer',  group: 'Actions',   label: 'Add New Customer',          icon: '➕', path: '/customers', action: 'new', hideForCustomer: true },
 ]
 
 function fuzzyMatch(str, query) {
@@ -50,6 +51,8 @@ export default function CommandPalette() {
   const nav = useNavigate()
   const inputRef = useRef(null)
 
+  const { isCustomer } = useAuth()
+
   // Ctrl+K global hotkey
   useEffect(() => {
     const h = (e) => {
@@ -69,9 +72,11 @@ export default function CommandPalette() {
     if (open) setTimeout(() => inputRef.current?.focus(), 50)
   }, [open])
 
+  const availableCommands = COMMANDS.filter(c => !(c.hideForCustomer && isCustomer()))
+  
   const filtered = query.trim()
-    ? COMMANDS.filter(c => fuzzyMatch(c.label, query) || fuzzyMatch(c.group, query))
-    : COMMANDS
+    ? availableCommands.filter(c => fuzzyMatch(c.label, query) || fuzzyMatch(c.group, query))
+    : availableCommands
 
   // Group results
   const grouped = filtered.reduce((acc, cmd) => {

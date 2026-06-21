@@ -109,6 +109,10 @@ class SalesOrderIn(BaseModel):
     lines: list[SOLineIn] = []
 
 
+class PlaceOrderIn(BaseModel):
+    lines: list[SOLineIn] = []
+
+
 class DeliverIn(BaseModel):
     deliveries: dict[int, float] = {}
 

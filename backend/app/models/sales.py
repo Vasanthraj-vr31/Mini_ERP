@@ -13,7 +13,7 @@ class SalesOrder(Base):
     customer_id: Mapped[int] = mapped_column(ForeignKey("customers.id"))
     customer_address: Mapped[str] = mapped_column(Text, default="")
     salesperson_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
-    status: Mapped[str] = mapped_column(String(30), default=SOStatus.draft.value)
+    status: Mapped[str] = mapped_column(String(30), default=SOStatus.pending.value)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     lines: Mapped[list["SaleOrderLine"]] = relationship(
@@ -36,6 +36,10 @@ class SaleOrderLine(Base):
     ordered_qty: Mapped[float] = mapped_column(Float, default=0.0)
     delivered_qty: Mapped[float] = mapped_column(Float, default=0.0)
     sales_price: Mapped[float] = mapped_column(Float, default=0.0)
+    
+    shortage_qty: Mapped[float] = mapped_column(Float, default=0.0)
+    linked_po: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    linked_mo: Mapped[str | None] = mapped_column(String(50), nullable=True)
 
     order: Mapped["SalesOrder"] = relationship(back_populates="lines")
     product = relationship("Product")
@@ -44,3 +48,4 @@ class SaleOrderLine(Base):
     def total(self) -> float:
         qty = self.delivered_qty if self.delivered_qty else self.ordered_qty
         return round(qty * self.sales_price, 2)
+

@@ -2,11 +2,14 @@ import enum
 
 
 class SOStatus(str, enum.Enum):
-    draft = "Draft"
-    confirmed = "Confirmed"
-    partially_delivered = "Partially Delivered"
-    fully_delivered = "Fully Delivered"
-    cancelled = "Cancelled"
+    pending = "PENDING"
+    confirmed = "CONFIRMED"
+    pending_procurement = "PENDING_PROCUREMENT"
+    backorder = "BACKORDER"
+    out_of_stock = "OUT_OF_STOCK"
+    dispatched = "DISPATCHED"
+    delivered = "DELIVERED"
+    cancelled = "CANCELLED"
 
 
 class POStatus(str, enum.Enum):

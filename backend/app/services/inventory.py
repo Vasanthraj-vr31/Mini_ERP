@@ -38,7 +38,12 @@ def reserved_for(db: Session, product_id: int) -> float:
         .join(SalesOrder, SaleOrderLine.order_id == SalesOrder.id)
         .filter(
             SaleOrderLine.product_id == product_id,
-            SalesOrder.status.in_([SOStatus.confirmed.value, SOStatus.partially_delivered.value]),
+            SalesOrder.status.in_([
+                SOStatus.confirmed.value,
+                SOStatus.pending_procurement.value,
+                SOStatus.backorder.value,
+                SOStatus.out_of_stock.value,
+            ]),
         )
         .all()
     )

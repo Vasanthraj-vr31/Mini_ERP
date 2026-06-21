@@ -1,6 +1,6 @@
 import { createContext, useContext, useState } from 'react'
 import api from './api'
-import { can, isAdmin } from './permissions'
+import { can, isAdmin, isCustomer } from './permissions'
 
 const AuthCtx = createContext(null)
 
@@ -33,9 +33,10 @@ export function AuthProvider({ children }) {
   // can(module, action) — checks current user's role permissions
   const userCan = (module, action) => can(user?.role, module, action)
   const userIsAdmin = () => isAdmin(user?.role)
+  const userIsCustomer = () => isCustomer(user?.role)
 
   return (
-    <AuthCtx.Provider value={{ user, login, logout, setUser: updateUser, can: userCan, isAdmin: userIsAdmin }}>
+    <AuthCtx.Provider value={{ user, login, logout, setUser: updateUser, can: userCan, isAdmin: userIsAdmin, isCustomer: userIsCustomer }}>
       {children}
     </AuthCtx.Provider>
   )

@@ -23,7 +23,10 @@ def dashboard(db: Session = Depends(get_db), _=Depends(get_current_user)):
     so = _counts(db, SalesOrder, list(SOStatus))
     po = _counts(db, PurchaseOrder, list(POStatus))
     mo = _counts(db, ManufacturingOrder, list(MOStatus))
-    pending_deliveries = (so.get("Confirmed", 0) + so.get("Partially Delivered", 0))
+    pending_deliveries = (
+        so.get("PENDING", 0) + so.get("CONFIRMED", 0) + 
+        so.get("BACKORDER", 0) + so.get("PENDING_PROCUREMENT", 0)
+    )
     partial_receipts = po.get("Partially Received", 0)
     return {
         "sales": so, "purchase": po, "manufacturing": mo,

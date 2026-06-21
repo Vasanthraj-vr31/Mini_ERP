@@ -288,13 +288,15 @@ export default function Dashboard() {
       {/* ── Module Status Sections ── */}
       {canSales && (
         <ModuleSection title="Sales Orders" onAll={() => nav('/sales')} navBase="/sales"
-          tones={['neutral', 'info', 'warning', 'success', 'danger']}
+          tones={['warning', 'success', 'info', 'warning', 'danger', 'success', 'success']}
           buckets={[
-            ['Draft',     data.sales.Draft],
-            ['Confirmed', data.sales.Confirmed],
-            ['Partial',   data.sales['Partially Delivered']],
-            ['Delivered', data.sales['Fully Delivered']],
-            ['Cancelled', data.sales.Cancelled],
+            ['Pending',     data.sales.PENDING],
+            ['Confirmed',   data.sales.CONFIRMED],
+            ['Proc. Pending', data.sales.PENDING_PROCUREMENT],
+            ['Backorder',   data.sales.BACKORDER],
+            ['Out of Stock', data.sales.OUT_OF_STOCK],
+            ['Dispatched',  data.sales.DISPATCHED],
+            ['Delivered',   data.sales.DELIVERED],
           ]} />
       )}
 

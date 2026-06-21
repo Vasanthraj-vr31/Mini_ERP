@@ -36,7 +36,7 @@ function NavItem({ label, path }) {
 }
 
 export default function Layout({ children }) {
-  const { user, logout, can, isAdmin } = useAuth()
+  const { user, logout, can, isAdmin, isCustomer } = useAuth()
   const nav = useNavigate()
   const location = useLocation()
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -67,10 +67,10 @@ export default function Layout({ children }) {
         can('Manufacturing', 'view') && { label: 'Manufacturing Orders',  path: '/manufacturing' },
         can('Manufacturing', 'view') && { label: 'Bills of Materials',    path: '/boms' },
         can('Product', 'view')       && { label: 'Products',              path: '/products' },
-        can('Sales', 'view')         && { label: 'Customers',             path: '/customers' },
-        can('Product', 'view')       && { label: 'Warehouse',             path: '/warehouse' },
+        can('Sales', 'view')         && !isCustomer() && { label: 'Customers',             path: '/customers' },
+        can('Product', 'view')       && !isCustomer() && { label: 'Warehouse',             path: '/warehouse' },
         can('Sales', 'view')         && { label: 'Invoices',              path: '/invoices' },
-        can('Manufacturing', 'view') && { label: 'Quality Control',       path: '/quality' },
+        can('Manufacturing', 'view') && !isCustomer() && { label: 'Quality Control',       path: '/quality' },
       ].filter(Boolean),
     },
     hasIntelligence ? {

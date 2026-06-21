@@ -21,8 +21,8 @@ def compute(db: Session) -> dict:
     # Sales score: fulfillment ratio
     sos = db.query(SalesOrder).all()
     if sos:
-        good = sum(1 for s in sos if s.status in (SOStatus.fully_delivered.value,
-                                                  SOStatus.partially_delivered.value))
+        good = sum(1 for s in sos if s.status in (SOStatus.delivered.value,
+                                                  SOStatus.dispatched.value))
         cancelled = sum(1 for s in sos if s.status == SOStatus.cancelled.value)
         sales_score = _clamp((good - cancelled) / len(sos) * 100 + 30)
     else:

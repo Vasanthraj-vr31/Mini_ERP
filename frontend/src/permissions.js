@@ -29,7 +29,10 @@ const ROLE_PERMS = {
     'Inventory:view','Reports:view','Analytics:view','AuditLogs:view',
   ]),
   'Normal User': new Set([
-    'Sales:view','Purchase:view','Manufacturing:view','Product:view','Inventory:view',
+    'Sales:view','Sales:create','Product:view',
+    'Purchase:view', 'Purchase:create', 'Purchase:edit', 'Purchase:approve',
+    'Manufacturing:view', 'Manufacturing:create', 'Manufacturing:edit', 'Manufacturing:approve', 
+    'Inventory:view'
   ]),
 }
 
@@ -43,4 +46,8 @@ export function can(role, module, action) {
 
 export function isAdmin(role) {
   return role === 'System Administrator' || role === 'Admin'
+}
+
+export function isCustomer(role) {
+  return role === 'Normal User'
 }

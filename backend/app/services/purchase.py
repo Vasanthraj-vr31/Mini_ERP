@@ -43,6 +43,11 @@ def receive(db: Session, po: PurchaseOrder, receipts: dict[int, float] | None = 
     po.status = POStatus.fully_received.value if fully else POStatus.partially_received.value
     audit.log(db, module="Purchase", record_type="Purchase Order", record_ref=po.reference,
               action="Updated", field="status", old=old, new=po.status, user=user)
+              
+    if po.status == POStatus.fully_received.value and po.source:
+        from app.services.sales import check_auto_dispatch
+        check_auto_dispatch(db, po.source, user=user)
+        
     return po
 
 

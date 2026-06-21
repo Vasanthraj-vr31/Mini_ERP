@@ -30,12 +30,12 @@ def analytics_summary(
 ):
     # --- Sales KPIs ---
     so_all = db.query(SalesOrder).all()
-    so_confirmed = [s for s in so_all if s.status not in ("Draft", "Cancelled")]
-    so_delivered = [s for s in so_all if s.status == "Delivered"]
+    so_confirmed = [s for s in so_all if s.status not in ("PENDING", "CANCELLED", "OUT_OF_STOCK")]
+    so_delivered = [s for s in so_all if s.status in ("DISPATCHED", "DELIVERED")]
     total_revenue = sum(
-        sum(l.sales_price * l.delivered_qty for l in s.lines) for s in so_delivered
+        sum(l.sales_price * (l.delivered_qty or l.ordered_qty) for l in s.lines) for s in so_delivered
     )
-    pending_so = len([s for s in so_all if s.status == "Confirmed"])
+    pending_so = len([s for s in so_all if s.status in ("PENDING", "CONFIRMED", "PENDING_PROCUREMENT", "BACKORDER")])
 
     # Monthly revenue (last 6 months)
     monthly_revenue = []
@@ -46,7 +46,7 @@ def analytics_summary(
         for s in so_delivered:
             created = s.created_at
             if created and start <= created.replace(tzinfo=timezone.utc) < end.replace(tzinfo=timezone.utc):
-                rev += sum(l.sales_price * l.delivered_qty for l in s.lines)
+                rev += sum(l.sales_price * (l.delivered_qty or l.ordered_qty) for l in s.lines)
         label = end.strftime("%b %Y")
         monthly_revenue.append({"month": label, "revenue": round(rev, 2)})
 

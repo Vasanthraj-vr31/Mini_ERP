@@ -96,6 +96,11 @@ def produce(db: Session, mo: ManufacturingOrder, user=None) -> ManufacturingOrde
     audit.log(db, module="Manufacturing", record_type="Manufacturing Order",
               record_ref=mo.reference, action="Updated", field="status",
               old=old, new=mo.status, user=user)
+              
+    if mo.status == MOStatus.done.value and mo.source:
+        from app.services.sales import check_auto_dispatch
+        check_auto_dispatch(db, mo.source, user=user)
+        
     return mo
 
 

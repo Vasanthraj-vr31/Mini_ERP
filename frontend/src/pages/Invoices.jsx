@@ -1,10 +1,12 @@
 import { useEffect, useState, useMemo } from 'react'
 import api, { money } from '../api'
+import { useAuth } from '../auth'
 import { PageHeader, Spinner, Chip, EmptyState } from '../components/ui'
 import DataTable from '../components/DataTable'
 import { InvoicePrintView } from '../components/ExportButton'
 
 export default function Invoices() {
+  const { user, isCustomer } = useAuth()
   const [sales, setSales] = useState(null)
   const [purchase, setPurchase] = useState(null)
   const [view, setView] = useState('Receivable') // Receivable (Sales) or Payable (Purchase)
@@ -73,9 +75,11 @@ export default function Invoices() {
         <button onClick={() => setView('Receivable')} className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${view === 'Receivable' ? 'bg-burgundy-800 text-white shadow-sm' : 'text-ink-500 hover:text-ink-900 hover:bg-paper-50'}`}>
           Accounts Receivable (Sales)
         </button>
-        <button onClick={() => setView('Payable')} className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${view === 'Payable' ? 'bg-burgundy-800 text-white shadow-sm' : 'text-ink-500 hover:text-ink-900 hover:bg-paper-50'}`}>
-          Accounts Payable (Purchase)
-        </button>
+        {!isCustomer() && (
+          <button onClick={() => setView('Payable')} className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${view === 'Payable' ? 'bg-burgundy-800 text-white shadow-sm' : 'text-ink-500 hover:text-ink-900 hover:bg-paper-50'}`}>
+            Accounts Payable (Purchase)
+          </button>
+        )}
       </div>
 
       <div className="card overflow-hidden">
